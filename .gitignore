@@ -3,6 +3,10 @@ venv/
 
 # Raw data (large / reproducible)
 data/raw/
+data/processed/
+
+# Generated outputs
+outputs/
 
 # Python cache
 __pycache__/
