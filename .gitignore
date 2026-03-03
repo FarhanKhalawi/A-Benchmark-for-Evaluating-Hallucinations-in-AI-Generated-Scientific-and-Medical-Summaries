@@ -6,7 +6,7 @@ data/raw/
 data/processed/
 
 # Generated outputs
-outputs/
+outputs*
 
 # Python cache
 __pycache__/
