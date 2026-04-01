@@ -22,22 +22,31 @@ if isinstance(ACTIVE_MODEL, str):
 
 # ── Color palette (one per model) ────────────────────────────
 PALETTE = [
+    # Original 5
     "#00C9FF",   # cyan-blue
     "#FF6B6B",   # coral
     "#A8FF78",   # lime green
     "#FFD93D",   # gold
     "#C77DFF",   # violet
+
+    # New 5
+    "#FF9F43",   # orange
+    "#1DD1A1",   # mint green
+    "#54A0FF",   # royal blue
+    "#FF6EB4",   # hot pink
+    "#01CBC6",   # teal
 ]
 
 # ── Load data ─────────────────────────────────────────────────
 model_data = {}
 for model_name in ACTIVE_MODEL:
     out_dir = OUTPUT_BASE_DIR.format(model=model_name)
-    csv_path = f"{out_dir}/results_with_factscore.csv"
+    csv_path = f"{out_dir}/results_with_factscore100s.csv"
     try:
         df = pd.read_csv(csv_path)
         model_data[model_name] = df
         print(f"  Loaded {len(df)} rows from {csv_path}")
+        print(f"  Available columns: {df.columns.tolist()}")
     except FileNotFoundError:
         print(f"  WARNING: {csv_path} not found — skipping {model_name}")
 
@@ -135,7 +144,19 @@ for model_name, df in model_data.items():
     t = df["total_facts"].replace(0, np.nan)
     mean_supp.append(  (df["supported"]      / t).mean() * 100)
     mean_nv.append(    (df["not_verifiable"] / t).mean() * 100)
-    mean_contra.append((df["contradicted"]   / t).mean() * 100)
+    
+    # Handle contradicted column - might be named differently or missing
+    if "contradicted" in df.columns:
+        mean_contra.append((df["contradicted"] / t).mean() * 100)
+    elif "not_supported" in df.columns:
+        mean_contra.append((df["not_supported"] / t).mean() * 100)
+    else:
+        # If no contradicted column exists, calculate as remainder
+        # (assuming supported + not_verifiable + contradicted = 100%)
+        contra_val = 100 - ((df["supported"] / t).mean() * 100) - ((df["not_verifiable"] / t).mean() * 100)
+        mean_contra.append(max(0, contra_val))  # ensure non-negative
+        print(f"  WARNING: No 'contradicted' column found for {model_name}, calculated as remainder: {contra_val:.2f}%")
+    
     mean_total.append( df["total_facts"].mean())
 
 mean_supp   = np.array(mean_supp)
