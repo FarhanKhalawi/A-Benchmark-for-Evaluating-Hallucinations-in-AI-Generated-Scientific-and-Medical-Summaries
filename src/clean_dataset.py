@@ -1,3 +1,5 @@
+
+
 import pandas as pd
 import os
 import tiktoken
@@ -15,24 +17,11 @@ def is_biomedical(article_text):
     prompt = f"""
 Answer ONLY with YES or NO.
 
-Is the following text from a biomedical research article?
-
-Count as YES if the article is about:
-- Human or animal diseases, disorders, or conditions
-- Clinical studies, trials, or medical treatments
-- Drugs, medications, or therapies
-- Human biology, anatomy, or physiology
-- Public health, epidemiology, or mental health
-- Medical imaging, diagnosis, or surgery
-
-Count as NO if the article is about:
-- Agriculture, farming, or food science
-- Engineering, chemistry, or physics
-- Education, psychology, or social science
-- Technology, computing, or economics
+Is the following text from a biomedical research article
+(such as medicine, biology, clinical studies, disease research)?
 
 Text:
-{article_text[:1000]}
+{article_text[:2000]}
 """
     response = client.chat.completions.create(
         model="gpt-4.1-nano",
