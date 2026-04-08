@@ -129,8 +129,8 @@ def build_prompt(article_text: str) -> str:
         "If a number or unit is not present in the text, do NOT invent it. "
         "Do NOT use any markdown formatting such as bold, italics, or headers. "
         "STRICT LIMIT: Write maximum 7 sentences total, keeping each sentence concise. "
-        "Format the abstract with 4 short parts in ONE plain text paragraph:\n"
-        "Background: [1-2 sentences]. Methods: [1-2 sentences]. Results: [1-2 sentences]. Conclusion: [1 sentence].\n\n"
+        "Format the abstract with 4 short parts in ONE paragraph:\n"
+        "Background: ... Methods: ... Results: ... Conclusion: ...\n\n"
         f"{article_text}\n\nSummary:"
     )
 
@@ -281,7 +281,7 @@ def run_model_local(cfg: dict, data_df: pd.DataFrame):
     short   = cfg["short_name"]
     out_dir = OUTPUT_BASE_DIR.format(model=short)
     os.makedirs(out_dir, exist_ok=True)
-    out_csv = os.path.join(out_dir, "results.csv")
+    out_csv = os.path.join(out_dir, "resultstest.csv")
 
     print(f"\n{'='*60}")
     print(f"  MODEL   : {short}  [LOCAL GPU]")
@@ -491,7 +491,7 @@ def run_model_api(cfg: dict, data_df: pd.DataFrame):
     max_new_tokens = cfg.get("max_new_tokens", GENERATION.get("max_new_tokens", 512))
     out_dir        = OUTPUT_BASE_DIR.format(model=short)
     os.makedirs(out_dir, exist_ok=True)
-    out_csv = os.path.join(out_dir, "results.csv")
+    out_csv = os.path.join(out_dir, "resultstest.csv")
 
     print(f"\n{'='*60}")
     print(f"  MODEL      : {short}  [TOGETHER.AI API]")
@@ -666,7 +666,7 @@ def run_model_openai(cfg: dict, data_df: pd.DataFrame):
     reasoning_effort = cfg.get("reasoning_effort", None)         # ← NEW
     out_dir          = OUTPUT_BASE_DIR.format(model=short)
     os.makedirs(out_dir, exist_ok=True)
-    out_csv = os.path.join(out_dir, "results.csv")
+    out_csv = os.path.join(out_dir, "resultstest.csv")
 
     is_reasoning = _is_openai_reasoning_model(openai_model)
 
