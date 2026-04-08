@@ -129,7 +129,7 @@ model_data = {}
 
 for model_name in ACTIVE_MODEL:
     out_dir = OUTPUT_BASE_DIR.format(model=model_name)
-    csv_path = os.path.join(out_dir, "results_with_factscore100s.csv")
+    csv_path = os.path.join(out_dir, "results_with_factscore10s.csv")
 
     try:
         df = pd.read_csv(csv_path)
