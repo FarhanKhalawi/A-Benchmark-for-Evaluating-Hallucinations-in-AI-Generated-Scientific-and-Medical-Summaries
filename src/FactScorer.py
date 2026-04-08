@@ -315,7 +315,7 @@ active_models = ACTIVE_MODEL if isinstance(ACTIVE_MODEL, list) else [ACTIVE_MODE
 
 for CURRENT_MODEL in active_models:
 
-    RESULTS_CSV = OUTPUT_BASE_DIR.format(model=CURRENT_MODEL) + "/results.csv"
+    RESULTS_CSV = OUTPUT_BASE_DIR.format(model=CURRENT_MODEL) + "/resultstest.csv"
     OUT_CSV     = OUTPUT_BASE_DIR.format(model=CURRENT_MODEL) + "/results_with_factscore10s.csv"
 
     print(f"\n\n{'#'*72}")
