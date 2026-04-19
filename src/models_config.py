@@ -35,20 +35,31 @@ MODELS = [
         "name":       "Qwen/Qwen3-0.6B",
         "short_name": "Qwen3-0.6B",
         "thinking":   False,
-        "enabled":    True,
+        "enabled":    False,
+        
     },
     {
         "name":       "Qwen/Qwen3-4B",
         "short_name": "Qwen3-4B",
         "thinking":   False,
-        "enabled":    True,   
+        "enabled":    False,   
     },
+    {
+        "short_name":     "Llama3-8B-Instruct-Lite",
+        "api":            "together",
+        "together_model": "meta-llama/Meta-Llama-3-8B-Instruct-Lite",
+        "thinking":       False,
+        "enabled":        False,
+        "n_threads":      4,
+        "max_new_tokens": 512,
+    },
+
     {
         "short_name":     "Qwen3.5-9B",
         "api":            "together",
         "together_model": "Qwen/Qwen3.5-9B",
         "thinking":       False,
-        "enabled":        True,
+        "enabled":        False,
         "n_threads":      4,
         "max_new_tokens": 512,
     },
@@ -57,7 +68,7 @@ MODELS = [
         "api":            "openai",        
         "openai_model":   "gpt-4.1-mini",
         "thinking":       False,
-        "enabled":        True,
+        "enabled":        False,
         "n_threads":      4,
         "max_new_tokens": 512,
     },
@@ -66,16 +77,7 @@ MODELS = [
         "api":            "together",
         "together_model": "deepseek-ai/DeepSeek-V3.1",
         "thinking":       False,
-        "enabled":        True,
-        "n_threads":      4,
-        "max_new_tokens": 512,
-    },
-    {
-        "short_name":     "Llama3-8B-Instruct-Lite",
-        "api":            "together",
-        "together_model": "meta-llama/Meta-Llama-3-8B-Instruct-Lite",
-        "thinking":       False,
-        "enabled":        True,
+        "enabled":        False,
         "n_threads":      4,
         "max_new_tokens": 512,
     },
@@ -84,7 +86,7 @@ MODELS = [
         "api":            "together",
         "together_model": "deepseek-ai/DeepSeek-V3.1",
         "thinking":       True,
-        "enabled":        True,
+        "enabled":        False,
         "n_threads":      4,
         "max_new_tokens": 4096,
     },
@@ -93,10 +95,20 @@ MODELS = [
         "api":            "openai",
         "openai_model":   "gpt-5.4-nano",
         "thinking":       False,
-        "enabled":        True,
+        "enabled":        False,
         "n_threads":      4,
         "max_new_tokens": 1024,
         "reasoning_effort": "none",   
+    },
+    {
+        "short_name":       "GPT-5-mini",
+        "api":              "openai",
+        "openai_model":     "gpt-5-mini",
+        "thinking":         False,
+        "enabled":          True,
+        "n_threads":        4,
+        "max_new_tokens":   1024,
+        "reasoning_effort": "minimal",
     },
 
     {
@@ -104,7 +116,7 @@ MODELS = [
         "api":            "openai",
         "openai_model":   "gpt-5.4-nano",
         "thinking":       False,
-        "enabled":        True,
+        "enabled":        False,
         "n_threads":      4,
         "max_new_tokens": 4096,
         "reasoning_effort": "medium",   # ← change here: none, low, medium, high
@@ -159,19 +171,19 @@ GENERATION = {
     "max_new_tokens": 512,
     "min_new_tokens": 80,
     "do_sample":      True,
-    "temperature":    0.7,
-    "top_p":          0.9,
+    "temperature":    0.3,
+    "top_p":          0.85,
     "top_k":          20,
 }
 
 # ── Shared data / I/O settings ──────────────────────────────
 DATA_CSV          = "data/processed/pubmed_train_clean_tokens(1000).csv"
-N_SAMPLES         = 30
+N_SAMPLES         = 1000
 SEED              = 42
 MAX_INPUT_TOKENS  = 7000
 MAX_ARTICLE_CHARS = 65000
 OUTPUT_BASE_DIR   = "outputs({model})_pubmed_abstract"
-ACTIVE_MODEL = [ "Qwen3-0.6B", "Qwen3-4B" , "Llama3-8B-Instruct-Lite" , "Qwen3.5-9B", "DeepSeek-V3.1-Thinking", "GPT-4.1-mini", "DeepSeek-V3.1", "GPT-5.4-nano", "GPT-5.4-nano-reasoning"] 
+ACTIVE_MODEL = ["Qwen3-0.6B" , "Qwen3.5-9B", "GPT-4.1-mini", "DeepSeek-V3.1-Thinking", "DeepSeek-V3.1", "GPT-5.4-nano", "GPT-5.4-nano-reasoning","GPT-5-mini"] 
 #ACTIVE_MODEL = ["Qwen2.5-7B-Instruct-Turbo", "Qwen3.5-9B", "Llama3-8B-Instruct-Lite", "o4-mini", "Mistral-Small-24B-Instruct", "GPT-4.1-mini", "Llama3.3-70B-Instruct-Turbo", "DeepSeek-V3.1"]
 
 #ACTIVE_MODEL = ["Qwen3-0.6B" , "Qwen3.5-9B", "GPT-4.1-mini", "DeepSeek-V3.1-Thinking", "DeepSeek-V3.1", "Llama3-8B-Instruct-Lite", "GPT-5.4-nano", "GPT-5.4-nano-reasoning"]
