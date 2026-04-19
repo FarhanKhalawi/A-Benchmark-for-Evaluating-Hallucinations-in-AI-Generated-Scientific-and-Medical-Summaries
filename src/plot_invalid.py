@@ -8,6 +8,7 @@ Shows the proportion of invalid summaries per model based on:
 """
 
 import os
+import re
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,25 +19,29 @@ from models_config import OUTPUT_BASE_DIR, ACTIVE_MODEL
 # VALIDATION
 # ============================================================
 
+def count_sentences(summary):
+    clean = re.sub(r'\*\*', '', summary)
+    clean = re.sub(r'\n+', ' ', clean)
+    clean = re.sub(r'(background|methods|results|conclusion)\s*:', '', clean, flags=re.IGNORECASE)
+    clean = clean.strip()
+    return len(sent_tokenize(clean))
+
 def is_valid_summary(summary: str) -> dict:
-    """
-    Check if the summary is valid.
-    Returns dict with reason for invalidity.
-    """
     if not summary or summary.startswith("ERROR"):
         return {"valid": False, "reason": "error"}
 
-    summary_lower = summary.lower()
-    required = ["background:", "methods:", "results:", "conclusion:"]
+    summary_lower = re.sub(r'\*\*', '', summary).lower()
+    required = ["background", "methods", "results", "conclusion"]
     missing = [s for s in required if s not in summary_lower]
     if missing:
         return {"valid": False, "reason": "missing_sections"}
 
-    n_sents = len(sent_tokenize(summary))
-    if n_sents > 10:
+    n_sents = count_sentences(summary)
+    if n_sents > 15:
         return {"valid": False, "reason": "too_long"}
 
     return {"valid": True, "reason": None}
+
 
 
 # ============================================================
@@ -51,7 +56,7 @@ model_stats = {}
 for model_name in ACTIVE_MODEL:
     csv_path = os.path.join(
         OUTPUT_BASE_DIR.format(model=model_name),
-        "resultstest.csv"
+        "results1000.csv"
     )
     try:
         df = pd.read_csv(csv_path)
@@ -115,7 +120,7 @@ ax.bar(x_pos, valid_pcts,    bar_width, label="Valid",
 ax.bar(x_pos, missing_pcts,  bar_width, label="Missing sections",
        color="#FFD93D", alpha=0.85,
        bottom=valid_pcts)
-ax.bar(x_pos, too_long_pcts, bar_width, label="Too long (>10 sentences)",
+ax.bar(x_pos, too_long_pcts, bar_width, label="Too long (>14 sentences)",
        color="#FF6B6B", alpha=0.85,
        bottom=[v + m for v, m in zip(valid_pcts, missing_pcts)])
 ax.bar(x_pos, error_pcts,    bar_width, label="ERROR",
@@ -125,7 +130,7 @@ ax.bar(x_pos, error_pcts,    bar_width, label="ERROR",
 # Labels on valid bar
 for i, (pos, pct) in enumerate(zip(x_pos, valid_pcts)):
     ax.text(
-        pos, pct / 2, f"{pct:.0f}%",
+        pos, pct / 2, f"{pct:.1f}%",
         ha="center", va="center",
         color="#0D1117", fontsize=10,
         fontweight="bold", fontfamily="monospace"
