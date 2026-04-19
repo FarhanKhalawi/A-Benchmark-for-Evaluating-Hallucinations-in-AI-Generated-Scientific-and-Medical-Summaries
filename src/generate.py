@@ -124,14 +124,14 @@ def build_prompt(article_text: str) -> str:
     if len(article_text) > MAX_ARTICLE_CHARS:
         article_text = article_text[:MAX_ARTICLE_CHARS]
     return (
-        "Write a structured scientific abstract for the following article. "
-        "ONLY use facts explicitly present in the text. "
-        "If a number or unit is not present in the text, do NOT invent it. "
-        "Do NOT use any markdown formatting such as bold, italics, or headers. "
-        "STRICT LIMIT: Write maximum 7 sentences total, keeping each sentence concise. "
-        "Format the abstract with 4 short parts in ONE paragraph:\n"
-        "Background: ... Methods: ... Results: ... Conclusion: ...\n\n"
-        f"{article_text}\n\nSummary:"
+        "Summarize this medical article as a scientific abstract. "
+        "Use four sections in this order: Background, Methods, Results, Conclusion. "
+        "Use ONLY facts from the article. Do NOT invent anything \n\n. "
+        f"Article:\n{article_text}\n\n"
+        "Background: write 2-3 sentences about the topic\n"
+        "Methods: write 2-3 sentences about what was done\n"
+        "Results: write 2-3 sentences about findings\n"
+        "Conclusion: write 1-2 sentences about implications"
     )
 
 # ── Preamble stripper ────────────────────────────────────────
@@ -281,7 +281,7 @@ def run_model_local(cfg: dict, data_df: pd.DataFrame):
     short   = cfg["short_name"]
     out_dir = OUTPUT_BASE_DIR.format(model=short)
     os.makedirs(out_dir, exist_ok=True)
-    out_csv = os.path.join(out_dir, "resultstest.csv")
+    out_csv = os.path.join(out_dir, "results1000.csv")
 
     print(f"\n{'='*60}")
     print(f"  MODEL   : {short}  [LOCAL GPU]")
@@ -491,7 +491,7 @@ def run_model_api(cfg: dict, data_df: pd.DataFrame):
     max_new_tokens = cfg.get("max_new_tokens", GENERATION.get("max_new_tokens", 512))
     out_dir        = OUTPUT_BASE_DIR.format(model=short)
     os.makedirs(out_dir, exist_ok=True)
-    out_csv = os.path.join(out_dir, "resultstest.csv")
+    out_csv = os.path.join(out_dir, "results1000.csv")
 
     print(f"\n{'='*60}")
     print(f"  MODEL      : {short}  [TOGETHER.AI API]")
@@ -666,7 +666,7 @@ def run_model_openai(cfg: dict, data_df: pd.DataFrame):
     reasoning_effort = cfg.get("reasoning_effort", None)         # ← NEW
     out_dir          = OUTPUT_BASE_DIR.format(model=short)
     os.makedirs(out_dir, exist_ok=True)
-    out_csv = os.path.join(out_dir, "resultstest.csv")
+    out_csv = os.path.join(out_dir, "results1000.csv")
 
     is_reasoning = _is_openai_reasoning_model(openai_model)
 
