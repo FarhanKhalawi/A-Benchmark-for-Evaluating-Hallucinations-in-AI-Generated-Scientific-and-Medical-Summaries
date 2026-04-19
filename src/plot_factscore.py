@@ -41,7 +41,7 @@ PALETTE = [
 model_data = {}
 for model_name in ACTIVE_MODEL:
     out_dir = OUTPUT_BASE_DIR.format(model=model_name)
-    csv_path = f"{out_dir}/results_with_factscore100s.csv"
+    csv_path = f"{out_dir}/results_with_factscore1000s.csv"
     try:
         df = pd.read_csv(csv_path)
         model_data[model_name] = df
@@ -94,7 +94,7 @@ for idx, (model_name, df) in enumerate(model_data.items()):
     jitter = (idx - (n_models - 1) / 2) * 0.25
     ax0.scatter(
         x + jitter, halluc,
-        color=color, s=38, alpha=0.85, linewidths=0,
+        color=color, s=10, alpha=0.85, linewidths=0,
         zorder=3, label=model_name,
     )
     # rolling mean line
