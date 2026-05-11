@@ -3,7 +3,7 @@ plot_invalid.py — Plot for invalid outputs per model
 =======================================================
 Shows the proportion of invalid summaries per model based on:
   - Missing Background/Methods/Results/Conclusion
-  - More than 10 sentences
+  - More than 15 sentences
   - Empty or ERROR
 """
 
@@ -11,9 +11,12 @@ import os
 import re
 import pandas as pd
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from nltk.tokenize import sent_tokenize
-from models_config import OUTPUT_BASE_DIR, ACTIVE_MODEL
+from models_config import OUTPUT_BASE_DIR, ACTIVE_MODEL, N_SAMPLES
+
+
 
 # ============================================================
 # VALIDATION
@@ -43,7 +46,6 @@ def is_valid_summary(summary: str) -> dict:
     return {"valid": True, "reason": None}
 
 
-
 # ============================================================
 # LOAD DATA
 # ============================================================
@@ -59,7 +61,7 @@ for model_name in ACTIVE_MODEL:
         "results1000.csv"
     )
     try:
-        df = pd.read_csv(csv_path)
+        df = pd.read_csv(csv_path).head(N_SAMPLES)
         summaries = df["generated_summary"].astype(str).tolist()
 
         total       = len(summaries)
@@ -94,25 +96,26 @@ for model_name in ACTIVE_MODEL:
 if not model_stats:
     raise RuntimeError("No data loaded. Run generate.py first.")
 
+
 # ============================================================
 # PLOT
 # ============================================================
 
-model_names  = list(model_stats.keys())
-n_models     = len(model_names)
-x_pos        = np.arange(n_models)
+model_names   = list(model_stats.keys())
+n_models      = len(model_names)
+x_pos         = np.arange(n_models)
 
 valid_pcts    = [model_stats[m]["valid_pct"]       for m in model_names]
 missing_pcts  = [model_stats[m]["missing_sec_pct"] for m in model_names]
 too_long_pcts = [model_stats[m]["too_long_pct"]    for m in model_names]
 error_pcts    = [model_stats[m]["error_pct"]       for m in model_names]
 
-fig, ax = plt.subplots(figsize=(14, 7), facecolor="#0D1117")
-ax.set_facecolor("#161B22")
-for spine in ax.spines.values():
-    spine.set_edgecolor("#30363D")
+fig, ax = plt.subplots(figsize=(16, 7))
+fig.patch.set_facecolor('white')
+fig.patch.set_edgecolor('white')
+ax.set_facecolor('white')
 
-bar_width = 0.6
+bar_width = 0.65
 
 # Stacked bars
 ax.bar(x_pos, valid_pcts,    bar_width, label="Valid",
@@ -128,57 +131,59 @@ ax.bar(x_pos, error_pcts,    bar_width, label="ERROR",
        bottom=[v + m + t for v, m, t in zip(valid_pcts, missing_pcts, too_long_pcts)])
 
 # Labels on valid bar
-for i, (pos, pct) in enumerate(zip(x_pos, valid_pcts)):
+for pos, pct in zip(x_pos, valid_pcts):
     ax.text(
         pos, pct / 2, f"{pct:.1f}%",
         ha="center", va="center",
-        color="#0D1117", fontsize=10,
-        fontweight="bold", fontfamily="monospace"
+        color="black", fontsize=14,
+        fontweight="bold", fontfamily="sans-serif"
     )
 
-# Labels on invalid bars
+# Labels on invalid bars (only if segment is big enough to read)
 for i, (pos, m_pct, t_pct, e_pct) in enumerate(
         zip(x_pos, missing_pcts, too_long_pcts, error_pcts)):
     bottom = valid_pcts[i]
     if m_pct > 3:
         ax.text(pos, bottom + m_pct / 2, f"{m_pct:.0f}%",
-                ha="center", va="center", color="#0D1117",
-                fontsize=9, fontweight="bold", fontfamily="monospace")
+                ha="center", va="center", color="black",
+                fontsize=15, fontweight="bold", fontfamily="monospace")
     bottom += m_pct
     if t_pct > 3:
         ax.text(pos, bottom + t_pct / 2, f"{t_pct:.0f}%",
-                ha="center", va="center", color="#0D1117",
-                fontsize=9, fontweight="bold", fontfamily="monospace")
+                ha="center", va="center", color="black",
+                fontsize=15, fontweight="bold", fontfamily="monospace")
     bottom += t_pct
     if e_pct > 3:
         ax.text(pos, bottom + e_pct / 2, f"{e_pct:.0f}%",
-                ha="center", va="center", color="#0D1117",
-                fontsize=9, fontweight="bold", fontfamily="monospace")
+                ha="center", va="center", color="black",
+                fontsize=15, fontweight="bold", fontfamily="monospace")
 
 ax.set_xticks(x_pos)
-ax.set_xticklabels(model_names, color="#E6EDF3", fontsize=9,
-                   fontfamily="monospace", rotation=15, ha="right")
-ax.set_ylabel("% of summaries", color="#8B949E", fontsize=10,
-              fontfamily="monospace")
-ax.set_ylim(0, 110)
-ax.set_title(
-    "Proportion of valid and invalid outputs per model",
-    color="#E6EDF3", fontsize=13, fontweight="bold",
-    fontfamily="monospace", pad=15
-)
-ax.tick_params(colors="#8B949E", labelsize=9)
-ax.grid(axis="y", color="#30363D", linewidth=0.6,
-        linestyle="--", alpha=0.8)
-ax.axhline(100, color="#30363D", linewidth=0.8)
+ax.set_xticklabels(model_names, fontsize=13, rotation=15, ha="right",
+                   fontfamily="sans-serif")
+ax.margins(x=0.05)
+ax.set_ylabel("% of summaries", fontsize=13, fontfamily="monospace")
+
+ax.set_ylim(0, 105)
+ax.tick_params(axis='y', labelsize=13)
+
+ax.grid(axis="y", linewidth=0.6, linestyle="--", alpha=0.8)
+ax.axhline(100, linewidth=0.6, linestyle="--", color="#cccccc", alpha=0.8)
+
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.spines["left"].set_color("#cccccc")
+ax.spines["bottom"].set_color("#cccccc")
 
 ax.legend(
-    frameon=True, facecolor="#161B22", edgecolor="#30363D",
-    labelcolor="#E6EDF3", fontsize=9, loc="upper right",
-    prop={"family": "monospace", "size": 9}
+    frameon=True, fontsize=12,
+    bbox_to_anchor=(1.01, 1), loc='upper left',
+    prop={"family": "monospace", "size": 12}
 )
 
-out_path = "plot_invalid_outputs.png"
+out_path = f"plot_invalid_outputs_{N_SAMPLES}s.png"
 fig.tight_layout()
-fig.savefig(out_path, dpi=180, bbox_inches="tight", facecolor="#0D1117")
+fig.savefig(out_path, dpi=180, bbox_inches="tight",
+            facecolor='white', edgecolor='white')
 print(f"\nSaved → {out_path}")
 plt.show()
