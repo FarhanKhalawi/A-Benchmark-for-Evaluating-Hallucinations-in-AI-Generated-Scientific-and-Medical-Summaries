@@ -184,7 +184,7 @@ MAX_INPUT_TOKENS  = 7000
 MAX_ARTICLE_CHARS = 65000
 OUTPUT_BASE_DIR   = "outputs({model})_pubmed_abstract"
 ACTIVE_MODEL = ["Qwen3-0.6B" , "Qwen3.5-9B", "GPT-4.1-mini", "DeepSeek-V3.1-Thinking", "DeepSeek-V3.1", "GPT-5.4-nano", "GPT-5.4-nano-reasoning","GPT-5-mini"] 
-#ACTIVE_MODEL = ["Qwen2.5-7B-Instruct-Turbo", "Qwen3.5-9B", "Llama3-8B-Instruct-Lite", "o4-mini", "Mistral-Small-24B-Instruct", "GPT-4.1-mini", "Llama3.3-70B-Instruct-Turbo", "DeepSeek-V3.1"]
+#ACTIVE_MODEL = ["Human-Written", "Qwen3-0.6B" , "Qwen3.5-9B", "GPT-4.1-mini", "DeepSeek-V3.1-Thinking", "DeepSeek-V3.1", "GPT-5.4-nano", "GPT-5.4-nano-reasoning","GPT-5-mini"]
 
 #ACTIVE_MODEL = ["Qwen3-0.6B" , "Qwen3.5-9B", "GPT-4.1-mini", "DeepSeek-V3.1-Thinking", "DeepSeek-V3.1", "Llama3-8B-Instruct-Lite", "GPT-5.4-nano", "GPT-5.4-nano-reasoning"]
 # gpt-5-mini, gpt-5.4-nano, DeepSeek-V3.1(Thinking), GPT-5.4-nano-reasoning, "Qwen3-4B"
