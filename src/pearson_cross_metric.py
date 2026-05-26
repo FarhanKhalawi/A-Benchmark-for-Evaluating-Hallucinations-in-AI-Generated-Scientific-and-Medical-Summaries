@@ -50,34 +50,61 @@ def load_model(model):
     })
 
 def pearson_pair(s1, s2):
+    """Return (r, p) for two series, dropping NaNs. Returns (nan, nan) if too few points."""
     tmp = pd.concat([s1, s2], axis=1).dropna()
     if len(tmp) < 5:
-        return np.nan
-    r, _ = stats.pearsonr(tmp.iloc[:, 0], tmp.iloc[:, 1])
-    return r
+        return np.nan, np.nan
+    r, p = stats.pearsonr(tmp.iloc[:, 0], tmp.iloc[:, 1])
+    return r, p
 
 def build_corr_matrix(df):
+    """Build r-matrix and p-matrix for all metric pairs."""
     n = len(METRICS)
-    mat = np.ones((n, n))
+    mat_r = np.ones((n, n))
+    mat_p = np.zeros((n, n))          # diagonal stays 0 (shown as "1.00" only)
     for i in range(n):
         for j in range(n):
             if i != j:
-                mat[i][j] = pearson_pair(df[METRICS[i]], df[METRICS[j]])
-    return mat
+                r, p = pearson_pair(df[METRICS[i]], df[METRICS[j]])
+                mat_r[i][j] = r
+                mat_p[i][j] = p
+    return mat_r, mat_p
 
-def draw_heatmap(ax, mat, title, fontsize_val=11):
+def fmt_p(p):
+    """Format a p-value for display inside a heatmap cell."""
+    if np.isnan(p):
+        return ""
+    if p < 0.001:
+        return "p<.001"
+    return f"p={p:.3f}"
+
+def draw_heatmap(ax, mat_r, mat_p, title, fontsize_val=11):
     n = len(METRICS)
     cmap = plt.cm.YlGnBu
     vmin, vmax = -0.4, 1.0
     norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
-    im = ax.imshow(mat, cmap=cmap, vmin=vmin, vmax=vmax, aspect="auto")
+    im = ax.imshow(mat_r, cmap=cmap, vmin=vmin, vmax=vmax, aspect="auto")
+
     for i in range(n):
         for j in range(n):
-            val = mat[i, j]
-            brightness = norm(val)
+            r_val = mat_r[i, j]
+            brightness = norm(r_val)
             txt_color = "white" if brightness > 0.75 or brightness < 0.25 else "black"
-            ax.text(j, i, f"{val:.2f}", ha="center", va="center",
-                    fontsize=fontsize_val, fontweight="bold", color=txt_color)
+
+            if i == j:
+                # Diagonal: just show 1.00
+                label = f"{r_val:.2f}"
+                ax.text(j, i, label, ha="center", va="center",
+                        fontsize=fontsize_val, fontweight="bold", color=txt_color)
+            else:
+                # Off-diagonal: r on top line, p-value on second line
+                r_line = f"{r_val:.2f}"
+                p_line = fmt_p(mat_p[i, j])
+                ax.text(j, i - 0.12, r_line, ha="center", va="center",
+                        fontsize=fontsize_val, fontweight="bold", color=txt_color)
+                ax.text(j, i + 0.28, p_line, ha="center", va="center",
+                        fontsize=fontsize_val - 3, fontweight="normal", color=txt_color)
+
     ax.set_xticks(range(n))
     ax.set_yticks(range(n))
     ax.set_xticklabels(METRICS, rotation=45, ha="right", fontsize=9)
@@ -85,29 +112,27 @@ def draw_heatmap(ax, mat, title, fontsize_val=11):
     ax.set_title(title, fontsize=10, fontweight="bold", pad=8)
     return im
 
-# Load
+# ── Load ────────────────────────────────────────────────────
 print(f"\nLoading {N_SAMPLES}-sample files...")
 frames = [load_model(m) for m in MODELS]
 frames = [f for f in frames if f is not None]
 pooled = pd.concat(frames, ignore_index=True)
 print(f"Pooled shape: {pooled.shape}")
 
-# Figure 1: Pooled
+# ── Figure 1: Pooled ────────────────────────────────────────
 fig1, ax1 = plt.subplots(figsize=(4.5, 3.8))
 fig1.patch.set_facecolor("white")
-mat_pooled = build_corr_matrix(pooled)
-im = draw_heatmap(ax1, mat_pooled, "", fontsize_val=13)
+mat_r_pooled, mat_p_pooled = build_corr_matrix(pooled)
+im = draw_heatmap(ax1, mat_r_pooled, mat_p_pooled, "", fontsize_val=13)
 cbar = fig1.colorbar(im, ax=ax1, fraction=0.046, pad=0.04)
 cbar.ax.tick_params(labelsize=8)
-#fig1.suptitle("Pearson correlations between hallucination metrics",
- #             fontsize=11, fontweight="bold", y=1.02)
 fig1.tight_layout()
-out1 = os.path.join(SAVE_DIR, f"pearson_pooled_{N_SAMPLES}s.png")
+out1 = os.path.join(SAVE_DIR, f"pearson_pooled_{N_SAMPLES}s_n.png")
 fig1.savefig(out1, dpi=150, bbox_inches="tight", facecolor="white")
 print(f"Saved -> {out1}")
 plt.close(fig1)
 
-# Figure 2: Per-model
+# ── Figure 2: Per-model ─────────────────────────────────────
 loaded_models = pooled["model"].unique().tolist()
 n_models = len(loaded_models)
 ncols = 3
@@ -115,12 +140,15 @@ nrows = (n_models + ncols - 1) // ncols
 fig2, axes = plt.subplots(nrows, ncols, figsize=(ncols * 3.8, nrows * 3.6))
 fig2.patch.set_facecolor("white")
 axes_flat = axes.flatten()
+
 for ax_idx, (model, grp) in enumerate(pooled.groupby("model", sort=False)):
     ax = axes_flat[ax_idx]
-    mat = build_corr_matrix(grp)
-    draw_heatmap(ax, mat, model, fontsize_val=10)
+    mat_r, mat_p = build_corr_matrix(grp)
+    draw_heatmap(ax, mat_r, mat_p, model, fontsize_val=10)
+
 for idx in range(n_models, len(axes_flat)):
     axes_flat[idx].set_visible(False)
+
 fig2.subplots_adjust(right=0.88, hspace=0.55, wspace=0.4)
 cbar_ax = fig2.add_axes([0.91, 0.15, 0.02, 0.7])
 sm = plt.cm.ScalarMappable(cmap=plt.cm.YlGnBu,
@@ -128,11 +156,8 @@ sm = plt.cm.ScalarMappable(cmap=plt.cm.YlGnBu,
 sm.set_array([])
 cbar2 = fig2.colorbar(sm, cax=cbar_ax)
 cbar2.ax.tick_params(labelsize=8)
-#fig2.suptitle(
-#    f"Per-model Pearson correlations between hallucination metrics ({N_SAMPLES} samples each)",
-#    fontsize=11, fontweight="bold", y=1.01
-#)
-out2 = os.path.join(SAVE_DIR, f"pearson_per_model_{N_SAMPLES}s.png")
+
+out2 = os.path.join(SAVE_DIR, f"pearson_per_model_{N_SAMPLES}s_n.png")
 fig2.savefig(out2, dpi=150, bbox_inches="tight", facecolor="white")
 print(f"Saved -> {out2}")
 plt.close(fig2)
