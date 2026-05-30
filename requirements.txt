@@ -1,0 +1,45 @@
+# ── API clients ───────────────────────────────────────────────
+openai          # OpenAI models (GPT-4.1-nano, GPT-4o-mini, GPT-5-nano, GPT-5.4-nano)
+together        # Together AI — Qwen and DeepSeek models
+
+# ── Data handling ─────────────────────────────────────────────
+pandas          # CSV loading, filtering, preprocessing
+numpy           # Numerical operations
+datasets        # Hugging Face — ccdv/pubmed-summarization dataset
+
+# ── Tokenization ──────────────────────────────────────────────
+tiktoken        # Token counting with cl100k_base encoding (dataset filtering)
+nltk            # Sentence tokenization for output validation
+
+# ── Evaluation metrics ────────────────────────────────────────
+bert-score      # BERTScore comparison in PlainQAFact pipeline
+transformers    # Backend required by bert-score
+torch           # Backend required by bert-score / transformers
+
+# ── Statistical analysis ──────────────────────────────────────
+scipy           # Pearson correlation, p-values
+
+# ── Visualization ─────────────────────────────────────────────
+matplotlib      # All plots (boxplots, ECDF, bar charts, heatmaps)
+seaborn         # Heatmaps and styled plots
+
+# ── Utilities ─────────────────────────────────────────────────
+tqdm            # Progress bars for long-running generation and evaluation loops
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#-------Install Python (Ubuntu / Debian)-----------
+#sudo apt update
+#sudo apt install -y python3 python3-venv python3-pip
+
+
+#-------Create the virtual environment-----------
+#python3 -m venv venv
+
+
+#-------Activate the venv-----------
+#source venv/bin/activate
+
+#-------Upgrade pip & install required packages-----------
+#pip install --upgrade pip
+#pip install datasets pandas pyarrow

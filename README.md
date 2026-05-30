@@ -1,1 +1,118 @@
-# A-Benchmark-for-Evaluating-Hallucinations-in-AI-Generated-Scientific-and-Medical-Summaries
+# Hallucination Benchmark for Biomedical Summarization
+
+**Master's Thesis — University of Agder, 2026**  
+Farhan Khalawi · Othman Alkhellawi  
+Supervisors: Dr. Morten Goodwin · Karl Audun Kagnes Borgersen
+
+---
+
+## What is this?
+
+A reproducible benchmark that measures how much **hallucination** (unsupported or fabricated content) different LLMs produce when summarizing biomedical research articles.
+
+- **1,000 PubMed articles** as the evaluation dataset
+- **8 LLMs** compared side-by-side, plus a human-written abstract baseline
+- **3 evaluation metrics**: FactScore, PlainQAFact, and LLM-as-a-Judge
+
+---
+
+## Pipeline
+
+```
+PubMed articles
+      │
+      ▼
+Data Cleaning & Token Filtering
+      │
+      ▼
+Biomedical Validation (GPT-4.1-nano)
+      │
+      ▼
+Summary Generation (8 LLMs)
+      │
+      ▼
+Output Validation (structure check)
+      │
+      ▼
+Hallucination Evaluation
+  ├── FactScore
+  ├── PlainQAFact
+  └── LLM-as-a-Judge
+```
+
+---
+
+## Models
+
+| Model | Provider | Reasoning |
+|---|---|---|
+| Qwen3-0.6B | Qwen | No |
+| Qwen3.5-9B | Qwen | No |
+| DeepSeek-V3.1 | DeepSeek | No |
+| DeepSeek-V3.1-Thinking | DeepSeek | Yes |
+| GPT-4.1-mini | OpenAI | No |
+| GPT-5-mini | OpenAI | Yes |
+| GPT-5.4-nano | OpenAI | No |
+| GPT-5.4-nano-reasoning | OpenAI | Yes |
+| Human-written abstract | PubMed | — |
+
+---
+
+## Results (1,000 samples — lower = better)
+
+| Model | FactScore | PlainQAFact | LLM-as-a-Judge | **Average** |
+|---|---|---|---|---|
+| GPT-5.4-nano-reasoning | 0.0711 | 0.0944 | 0.0625 | **0.0760** |
+| GPT-5.4-nano | 0.0716 | 0.0953 | 0.0643 | **0.0771** |
+| DeepSeek-V3.1 | **0.0689** | 0.1168 | 0.1403 | 0.1087 |
+| DeepSeek-V3.1-Thinking | 0.0700 | 0.1163 | 0.1403 | 0.1089 |
+| GPT-5-mini | 0.0790 | 0.1263 | 0.1100 | 0.1051 |
+| GPT-4.1-mini | 0.0736 | 0.1338 | 0.1278 | 0.1117 |
+| Qwen3.5-9B | 0.0850 | 0.1351 | 0.1630 | 0.1277 |
+| Qwen3-0.6B | 0.1274 | 0.1792 | 0.2866 | 0.1977 |
+| Human-written | 0.1563 | 0.1755 | 0.2330 | 0.1883 |
+
+---
+
+## Installation
+
+```bash
+git clone https://github.com/FarhanKhalawi/A-Benchmark-for-Evaluating-Hallucinations-in-AI-Generated-Scientific-and-Medical-Summaries.git
+cd A-Benchmark-for-Evaluating-Hallucinations-in-AI-Generated-Scientific-and-Medical-Summaries
+pip install -r requirements.txt
+```
+
+Set your API keys:
+
+```bash
+export OPENAI_API_KEY="your-openai-key"
+export TOGETHER_API_KEY="your-together-key"
+```
+
+---
+
+
+## Dataset
+
+This project uses the [PubMed Summarization dataset](https://huggingface.co/datasets/ccdv/pubmed-summarization) from Hugging Face.
+
+Download it and place the CSV in `data/raw/` before running preprocessing. The pipeline filters it down to 1,000 clean biomedical articles automatically.
+
+---
+
+## Dependencies
+
+```
+openai
+together
+pandas
+tiktoken
+nltk
+bert-score
+scipy
+matplotlib
+seaborn
+datasets
+```
+
+---
