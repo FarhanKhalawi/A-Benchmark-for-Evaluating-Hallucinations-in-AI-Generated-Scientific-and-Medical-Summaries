@@ -143,20 +143,20 @@ def judge_sample(article: str, summary: str) -> dict:
                     {"role": "system", "content": JUDGE_SYSTEM},
                     {"role": "user",   "content": user_prompt},
                 ],
-                max_tokens=10,       # Only needs a number
-                temperature=0.0      # Consistent judgments
+                max_tokens=10,      
+                temperature=0.0      
             )
             
             raw = response.choices[0].message.content.strip()
             
-            # Parse the number
-            score = float(raw)
-            score = max(0.0, min(1.0, score))  # Clamp 0-1
             
-            # Snap to nearest allowed value
+            score = float(raw)
+            score = max(0.0, min(1.0, score))  
+            
+           
             score = min(ALLOWED_SCORES, key=lambda x: abs(x - score))
             
-            # Convert to faithfulness (1 - hallucination)
+            
             faithfulness = round(1.0 - score, 4)
             
             return {

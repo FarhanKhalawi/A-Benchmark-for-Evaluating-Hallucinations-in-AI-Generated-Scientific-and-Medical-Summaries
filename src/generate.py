@@ -1,49 +1,17 @@
 """
 generate.py  —  Generate summaries for all models in models_config.py
 ======================================================================
-Run a single model:
-    python generate.py --model GPT-4.1-mini
-
-Run all models sequentially:
-    python generate.py --all
-
-Results are saved to:
-    outputs(<short_name>)_pubmed_abstract/results.csv
-
-Together.ai API models:
-    Set TOGETHER_API_KEY in your environment or .env file:
-        export TOGETHER_API_KEY=your_key_here
-    In models_config.py, set "api": "together" and "together_model": "<model_id>"
-
-OpenAI API models:
-    Set OPENAI_API_KEY in your environment or .env file:
-        export OPENAI_API_KEY=your_key_here
-    In models_config.py, set "api": "openai" and "openai_model": "<model_id>"
-    e.g. "openai_model": "gpt-4.1-mini"
-
-Local GPU models:
-    No API key needed. Set "api" to nothing (omit the key).
-    Heavy imports (torch, transformers) are loaded lazily — only when a local
-    model is actually being run, so API-only runs start in under 2 seconds.
-
-Thinking models (e.g. GPT-OSS-20B, Apriel-15B-Thinker):
-    Set "thinking": True and "max_new_tokens": 4096 in models_config.py.
-    The <think> / <reasoning> block is stripped automatically.
-
-Reasoning models (o1, o3, o4-*):
-    These models use max_completion_tokens instead of max_tokens and do not
-    support temperature / top_p / top_k sampling parameters. This is handled automatically.
 """
 
 import os
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
-# Load .env file if present (TOGETHER_API_KEY, OPENAI_API_KEY, etc.)
+
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
-    pass  # python-dotenv not installed, rely on environment variables
+    pass  
 
 import re
 import gc
@@ -86,8 +54,6 @@ def tprint(*args, **kwargs):
 
 
 # ── Lazy imports for heavy GPU libs ─────────────────────────
-# Only loaded when a local GPU model is actually used.
-# API-only runs (Together.ai / OpenAI) skip these entirely.
 _torch = None
 _transformers_loaded = False
 AutoModelForCausalLM = None
@@ -158,8 +124,6 @@ def strip_thinking(text: str):
 
 
 # ── OpenAI reasoning-model detection ────────────────────────
-# o1-*, o3-*, o4-*, gpt-5.* require max_completion_tokens and don't support
-# temperature / top_p / top_k sampling parameters.
 _OPENAI_REASONING_PREFIXES = ("o1", "o3", "o4", "gpt-5")
 
 def _is_openai_reasoning_model(model_name: str) -> bool:
@@ -416,8 +380,7 @@ def _summarise_one_api(
     prompt = build_prompt(article_text)
 
     try:
-        # Pass enable_thinking=False for non-thinking models
-        # (some Together.ai models like Qwen3.5-9B default to thinking mode)
+        
         extra = {} if thinking else {"chat_template_kwargs": {"enable_thinking": False}}
 
         response = client.chat.completions.create(
@@ -569,7 +532,7 @@ def _summarise_one_openai(
     client,
     max_new_tokens: int,
     reasoning: bool = None,
-    reasoning_effort: str = None,        # ← NEW
+    reasoning_effort: str = None,        
 ) -> dict:
     """
     Call OpenAI API for one sample.
@@ -594,18 +557,18 @@ def _summarise_one_openai(
 
     try:
         if is_reasoning:
-            # Reasoning models: max_completion_tokens, no sampling params
+        
             kwargs = dict(
                 model=openai_model,
                 messages=[{"role": "user", "content": prompt}],
                 max_completion_tokens=max_new_tokens,
             )
-            # Apply reasoning_effort if provided (supported by gpt-5.* and o-series)
+            
             if reasoning_effort is not None:
                 kwargs["reasoning_effort"] = reasoning_effort
             response = client.chat.completions.create(**kwargs)
         else:
-            # Standard models: max_tokens + sampling params
+            
             response = client.chat.completions.create(
                 model=openai_model,
                 messages=[{"role": "user", "content": prompt}],
@@ -663,7 +626,7 @@ def run_model_openai(cfg: dict, data_df: pd.DataFrame):
     openai_model     = cfg["openai_model"]
     n_threads        = cfg.get("n_threads", 4)
     max_new_tokens   = cfg.get("max_new_tokens", GENERATION.get("max_new_tokens", 512))
-    reasoning_effort = cfg.get("reasoning_effort", None)         # ← NEW
+    reasoning_effort = cfg.get("reasoning_effort", None)         
     out_dir          = OUTPUT_BASE_DIR.format(model=short)
     os.makedirs(out_dir, exist_ok=True)
     out_csv = os.path.join(out_dir, "results1000.csv")
@@ -674,7 +637,7 @@ def run_model_openai(cfg: dict, data_df: pd.DataFrame):
     print(f"  MODEL            : {short}  [OPENAI API]")
     print(f"  API model        : {openai_model}")
     print(f"  Uses max_completion_tokens : {is_reasoning}")
-    print(f"  Reasoning effort : {reasoning_effort}")             # ← NEW
+    print(f"  Reasoning effort : {reasoning_effort}")           
     print(f"  Threads          : {n_threads}  ← parallel requests")
     print(f"  max_tokens       : {max_new_tokens}")
     print(f"  Output           : {out_csv}")
@@ -699,7 +662,7 @@ def run_model_openai(cfg: dict, data_df: pd.DataFrame):
                 idx, article, abstract,
                 openai_model, client, max_new_tokens,
                 cfg.get("reasoning", None),
-                reasoning_effort,                                 # ← NEW
+                reasoning_effort,                                
             ): idx
             for idx, article, abstract in samples
         }
@@ -763,7 +726,7 @@ def main():
                 f"Available: {[m['short_name'] for m in MODELS]}"
             )
 
-    # Only print GPU info if at least one local model will run
+   
     has_local = any(t.get("api", "local") == "local" for t in targets)
     if has_local:
         torch = _lazy_load_torch()

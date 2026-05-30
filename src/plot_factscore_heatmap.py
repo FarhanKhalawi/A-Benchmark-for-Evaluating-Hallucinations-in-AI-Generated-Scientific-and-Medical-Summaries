@@ -1,15 +1,5 @@
 """
 plot_factscore_heatmap.py
-============================================================
-Option F — Per-sample hallucination heatmap
-
-Creates a compact thesis/report-friendly heatmap:
-- Y = model
-- X = sample index
-- Color = hallucination score = 1 - factscore
-
-Uses ACTIVE_MODEL from models_config.py
-Reads: results_with_factscore1000s.csv
 """
 
 import os
@@ -32,7 +22,7 @@ TEXT_COLOR = "#111827"
 SUBTEXT_COLOR = "#4B5563"
 GRID_COLOR = "#D9DEE5"
 
-# Optional: set to True if you want samples sorted by average difficulty
+
 SORT_COLUMNS_BY_MEAN = False
 
 
@@ -92,14 +82,13 @@ if n_models == 0:
 # ============================================================
 # Build matrix [models x samples]
 # ============================================================
-# Pad missing values with NaN so all rows have same width
 heatmap_data = np.full((n_models, max_len), np.nan, dtype=float)
 
 for i, model_name in enumerate(model_names):
     values = model_vectors[model_name]
     heatmap_data[i, :len(values)] = values
 
-# Optional: sort columns by average hallucination across models
+
 if SORT_COLUMNS_BY_MEAN:
     col_mean = np.nanmean(heatmap_data, axis=0)
     order = np.argsort(col_mean)
@@ -116,7 +105,7 @@ fig, ax = plt.subplots(figsize=(16, 4.8), facecolor=FIG_BG)
 fig.patch.set_facecolor(FIG_BG)
 ax.set_facecolor(AX_BG)
 
-# Use a copy of viridis and show NaN as white
+
 cmap = plt.cm.viridis.copy()
 cmap.set_bad(color="white")
 
@@ -126,7 +115,7 @@ im = ax.imshow(
     interpolation="nearest",
     cmap=cmap,
     vmin=0.0,
-    vmax=0.6,   # cap at 0.6 to make differences clearer
+    vmax=0.6,   
 )
 
 # Axis styling
@@ -164,7 +153,7 @@ ax.set_title(
 
 
 
-# Optional faint separators between rows
+
 for y in np.arange(-0.5, n_models, 1):
     ax.axhline(y, color=GRID_COLOR, linewidth=0.6, alpha=0.5)
 

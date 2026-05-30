@@ -1,21 +1,6 @@
 """
 plot_llm_judge.py — LLM-as-a-Judge Hallucination Visualization
-================================================================
 
-Thesis-friendly version using models_config.py.
-
-Figure 1 — LLM-as-a-Judge hallucination score distribution per model
-Figure 2 — ECDF of LLM-as-a-Judge hallucination scores per model
-
-Reads one file per model:
-results_llm_judge100s.csv
-
-Required column:
-hallucination_score
-
-Uses:
-- OUTPUT_BASE_DIR from models_config.py
-- ACTIVE_MODEL from models_config.py
 """
 
 import os

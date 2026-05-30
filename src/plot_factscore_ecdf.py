@@ -1,15 +1,5 @@
 """
 plot_factscore_ecdf.py
-============================================================
-Option F alternative — ECDF plot of hallucination scores
-
-Creates a compact thesis/report-friendly ECDF plot:
-- X = hallucination score = 1 - factscore
-- Y = cumulative proportion of summaries
-- Each line = one model
-
-Uses ACTIVE_MODEL from models_config.py
-Reads: results_with_factscore100s.csv
 """
 
 import os
@@ -32,10 +22,10 @@ TEXT_COLOR = "#111827"
 SUBTEXT_COLOR = "#4B5563"
 GRID_COLOR = "#D9DEE5"
 
-# X-axis limit. Use 0.50 or 0.60 if you want to focus on the main range.
+
 X_MAX = 0.50
 
-# Optional: sort legend by mean hallucination score
+
 SORT_MODELS_BY_MEAN = True
 
 

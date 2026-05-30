@@ -1,21 +1,3 @@
-"""
-plot_factscore.py — FactScore / Hallucination Boxplot Visualization
-===================================================================
-Reads results_with_factscorenew.csv for one or more models and generates
-a publication-quality figure with:
-
-1) Hallucination score distribution per model
-   hallucination = 1 - factscore
-
-2) Fact verification breakdown per model
-   supported / not verifiable / contradicted  (in %)
-
-This version fixes:
-- top annotation shows MEAN hallucination
-- bottom annotation shows MEAN percentage
-- bottom plot also shows a white diamond for the mean
-"""
-
 import os
 import pandas as pd
 import numpy as np

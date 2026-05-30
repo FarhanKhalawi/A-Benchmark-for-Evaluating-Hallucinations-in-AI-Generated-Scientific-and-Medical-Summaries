@@ -1,22 +1,5 @@
 """
 plot_factscore.py — FactScore / Hallucination Boxplot Visualization
-===================================================================
-Thesis-friendly version. Produces two separate figures on a white
-background, using the same cyan / yellow / red / purple / orange /
-teal / blue palette as the earlier dark version. Figure and axes
-titles are removed — the LaTeX \\caption{} block supplies the title
-in the thesis.
-
-Figure 1 — Hallucination score distribution per model
-             hallucination = 1 - factscore
-
-Figure 2 — Fact verification breakdown per model
-             supported / not verifiable  (in %)
-
-Both figures keep:
-- mean annotation above each box
-- filled diamond marker for the mean
-- model order taken from ACTIVE_MODEL in models_config.py
 """
 
 import os
@@ -35,7 +18,7 @@ from models_config import OUTPUT_BASE_DIR, ACTIVE_MODEL
 if isinstance(ACTIVE_MODEL, str):
     ACTIVE_MODEL = [ACTIVE_MODEL]
 
-# Same palette you liked, kept as-is
+
 PALETTE = [
     "#00C9FF",   # cyan
     "#FF6B6B",   # coral
@@ -86,7 +69,7 @@ def ensure_required_columns(df: pd.DataFrame, model_name: str) -> pd.DataFrame:
     for col in numeric_cols:
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    # reconstruct total_facts from the two categories we actually plot
+  
     missing_total_mask = df["total_facts"].isna() | (df["total_facts"] <= 0)
     reconstructed_total = (
         df["supported"].fillna(0)
@@ -125,7 +108,7 @@ def _style_bp(bp, color: str, n: int) -> None:
                 linewidth=1.4,
                 alpha=0.9,
             )
-        # dark median line — stands out against the light box fill on white
+        
         bp["medians"][i].set(color=TEXT_COLOR, linewidth=2.0)
 
         if len(bp["fliers"]) > i:
@@ -158,7 +141,7 @@ for model_name in ACTIVE_MODEL:
 if not model_data:
     raise RuntimeError("No data loaded. Run factscore.py first.")
 
-model_names = list(model_data.keys())     # preserves ACTIVE_MODEL order
+model_names = list(model_data.keys())     
 n_models    = len(model_names)
 colors      = [PALETTE[i % len(PALETTE)] for i in range(n_models)]
 x_pos       = np.arange(1, n_models + 1)
@@ -173,7 +156,7 @@ ax0.set_facecolor("white")
 for spine in ax0.spines.values():
     spine.set_edgecolor(SPINE_COLOR)
     spine.set_linewidth(0.8)
-# cleaner look for thesis — hide top/right spines
+
 ax0.spines["top"].set_visible(False)
 ax0.spines["right"].set_visible(False)
 
@@ -205,13 +188,13 @@ for i, (halluc, color) in enumerate(zip(halluc_data, colors)):
 
     mean_val = float(np.mean(halluc))
 
-    # mean annotation
+   
     ax0.text(
         x_pos[i], mean_val + 0.025, f"{mean_val:.4f}",
         ha="center", va="bottom",
         color=TEXT_COLOR, fontsize=9, fontweight="bold",
     )
-    # mean diamond: dark fill + white edge so it pops on any box color
+   
     ax0.scatter(
         x_pos[i], mean_val,
         marker="D", color=TEXT_COLOR,
@@ -259,7 +242,7 @@ for spine in ax1.spines.values():
 ax1.spines["top"].set_visible(False)
 ax1.spines["right"].set_visible(False)
 
-# Two categories, same cyan / yellow feel as before
+
 CAT_COLORS = {
     "Supported":      "#00C9FF",   # cyan
     "Not verifiable": "#FFD93D",   # yellow

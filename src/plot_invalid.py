@@ -139,7 +139,7 @@ for pos, pct in zip(x_pos, valid_pcts):
         fontweight="bold", fontfamily="sans-serif"
     )
 
-# Labels on invalid bars (only if segment is big enough to read)
+
 for i, (pos, m_pct, t_pct, e_pct) in enumerate(
         zip(x_pos, missing_pcts, too_long_pcts, error_pcts)):
     bottom = valid_pcts[i]

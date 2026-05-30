@@ -42,7 +42,7 @@ STABILITY_MODELS = ["DeepSeek-V3.1", "DeepSeek-V3.1-Thinking"]
 
 JUDGE_MODEL    = "gpt-4o-mini"
 N_RUNS         = 5
-TEMPERATURE    = 1.0          # ← key change vs main eval (was 0.0)
+TEMPERATURE    = 1.0          
 N_THREADS      = 8
 MAX_RETRIES    = 3
 RETRY_DELAY    = 2.0
@@ -162,7 +162,7 @@ def judge_sample(article: str, summary: str) -> dict:
                     {"role": "user",   "content": user_prompt},
                 ],
                 max_tokens=10,
-                temperature=TEMPERATURE,   # ← 1.0 for stability test
+                temperature=TEMPERATURE,   
             )
 
             raw   = response.choices[0].message.content.strip()
@@ -281,7 +281,7 @@ for CURRENT_MODEL in STABILITY_MODELS:
     print(f"  Samples : {n}")
 
     # ── Run N_RUNS times ─────────────────────────────────────
-    all_hall_scores = []   # list of Series, one per run
+    all_hall_scores = []   
 
     for run_id in range(1, N_RUNS + 1):
         run_df = run_once(articles, summaries, run_id, n, CURRENT_MODEL)
@@ -295,7 +295,7 @@ for CURRENT_MODEL in STABILITY_MODELS:
         all_hall_scores.append(hall_series)
 
     # ── Stability summary ─────────────────────────────────────
-    runs_df = pd.concat(all_hall_scores, axis=1)   # shape: (n, N_RUNS)
+    runs_df = pd.concat(all_hall_scores, axis=1)   
 
     summary_df = pd.DataFrame({
         "mean_hallucination" : runs_df.mean(axis=1),

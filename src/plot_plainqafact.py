@@ -1,21 +1,6 @@
 """
 plot_plainqafact.py — PlainQAFact-API Hallucination Visualization
-==================================================================
 
-Thesis-friendly version using models_config.py.
-
-Figure 1 — PlainQAFact-API hallucination score distribution per model (boxplot)
-Figure 2 — ECDF of PlainQAFact-API hallucination scores per model
-
-Reads one file per model:
-plainqafact_api_results.csv
-
-Required column:
-plainqafact_api_score  (converted to hallucination = 1 - score)
-
-Uses:
-- OUTPUT_BASE_DIR from models_config.py
-- ACTIVE_MODEL from models_config.py
 """
 
 import os
@@ -79,13 +64,13 @@ def ensure_required_columns(df: pd.DataFrame, model_name: str) -> pd.DataFrame:
 
     df = df.dropna(subset=["plainqafact_api_score"])
 
-    # Keep valid score range only
+   
     df = df[
         (df["plainqafact_api_score"] >= 0.0)
         & (df["plainqafact_api_score"] <= 1.0)
     ]
 
-    # Convert to hallucination score: higher = more hallucination
+    
     df["hallucination_score"] = 1.0 - df["plainqafact_api_score"]
 
     return df
@@ -431,7 +416,7 @@ bars = ax2.bar(
 for i, (bar, ratio, supported, total) in enumerate(
     zip(bars, ratios, supported_qs, total_qs)
 ):
-    # Percentage label above bar
+   
     ax2.text(
         bar.get_x() + bar.get_width() / 2,
         ratio + 0.008,
@@ -443,7 +428,7 @@ for i, (bar, ratio, supported, total) in enumerate(
         fontweight="bold",
     )
 
-    # supported/total label inside bar — white text, centered vertically
+    
     ax2.text(
         bar.get_x() + bar.get_width() / 2,
         ratio / 2,

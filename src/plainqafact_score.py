@@ -8,13 +8,6 @@ Pipeline (3 GPT calls per sample, regardless of summary length):
   Call 3 — QA  : Answer ALL questions from the full source article
   Step 4 — BERTScore compares answers → final score
 
-Improvement over previous version:
-  OLD: 3 × N_sentences GPT calls per sample  (e.g. 15 calls for 5 sentences)
-  NEW: exactly 3 GPT calls per sample        (flat, regardless of length)
-
-Install:
-    pip install openai python-dotenv pandas bert-score
-
 Inputs:
   data/processed/pubmed_train_clean_tokens(1000).csv → article column
   outputs(Model)_pubmed_abstract/results1000.csv     → generated_summary column
@@ -56,19 +49,16 @@ from models_config import (
 
 JUDGE_MODEL = "gpt-4o-mini"
 
-# Do not use 32 unless your API limit is high.
-# 4–8 is safer for long evaluations.
+
 N_THREADS = 8
 
 MAX_RETRIES = 5
 RETRY_BASE_DELAY = 2.0
 
-# Max questions generated from the whole summary.
-# Since we cover the entire summary at once, this should be larger
-# than the old per-sentence MAX_QUESTIONS.
+
 MAX_QUESTIONS_TOTAL = 20
 
-# BERTScore model.
+
 BERTSCORE_MODEL = "distilbert-base-uncased"
 BERTSCORE_BATCH_SIZE = 32
 
@@ -118,7 +108,7 @@ def safe_text(x) -> str:
         if pd.isna(x):
             return ""
     except (TypeError, ValueError):
-        # x is an array/tensor — not a scalar NA, just convert it
+        
         pass
     return str(x).strip()
 
@@ -218,7 +208,7 @@ def generate_questions(summary: str) -> tuple:
     if not sentences:
         return [], []
 
-    # Build numbered sentence list so GPT can tag each question
+   
     numbered = "\n".join(f"[{i+1}] {s}" for i, s in enumerate(sentences))
 
     user = f"""SUMMARY SENTENCES:
@@ -248,10 +238,9 @@ Rules:
         if not line:
             continue
 
-        # Extract sentence index prefix like [2]
         match = re.match(r"^\[(\d+)\]\s*", line)
         if match:
-            sent_idx = int(match.group(1)) - 1  # convert to 0-based
+            sent_idx = int(match.group(1)) - 1  
             q = line[match.end():].strip()
             q = re.sub(r"^\s*[-*•\d.)]+\s*", "", q).strip()
             if len(q) > 10 and q.endswith("?"):
@@ -260,7 +249,7 @@ Rules:
                 questions.append(q)
                 question_sources.append(sentences[sent_idx])
         else:
-            # No prefix — fall back to whole summary as source
+            
             q = re.sub(r"^\s*[-*•\d.)]+\s*", "", line).strip()
             if len(q) > 10 and q.endswith("?"):
                 questions.append(q)
@@ -299,7 +288,7 @@ def extract_json_list(raw: str, expected_len: int) -> list:
     if not raw:
         return ["unanswerable"] * expected_len
 
-    # Strip markdown fences if the model accidentally adds them.
+    
     raw = raw.replace("```json", "").replace("```", "").strip()
 
     try:
@@ -323,12 +312,12 @@ def extract_json_list(raw: str, expected_len: int) -> list:
             ans = "unanswerable"
         if "unanswerable" in ans:
             ans = "unanswerable"
-        # Keep only the first line if model adds extra text.
+        
         ans = ans.split("\n")[0].strip()
         ans = re.sub(r"^answer:\s*", "", ans).strip()
         answers.append(ans if ans else "unanswerable")
 
-    # Pad to expected length if model returned fewer answers.
+   
     while len(answers) < expected_len:
         answers.append("unanswerable")
 
@@ -360,7 +349,7 @@ QUESTIONS:
 {questions_text}
 """
 
-    # Scale tokens with the number of questions; raise the floor for large batches.
+  
     max_tokens = max(300, 80 * len(questions))
 
     raw = call_gpt(QA_BATCH_SYSTEM, user, max_tokens=max_tokens)
@@ -399,27 +388,25 @@ def compare_answers_bertscore(pred_answers: list, ref_answers: list):
     zero_scores = []
 
     for pred, ref in zip(pred_answers, ref_answers):
-        # Force to plain Python str before any comparison —
-        # guards against numpy arrays or tensors leaking from BERTScore.
+        
         pred = pred if isinstance(pred, str) else str(pred)
         ref  = ref  if isinstance(ref,  str) else str(ref)
         pred = pred.strip().lower()
         ref  = ref.strip().lower()
 
         if ref == "unanswerable":
-            # Question not answerable from summary → skip entirely.
+            
             continue
 
         if pred == "unanswerable":
-            # Summary has an answer but article does not → penalise.
+           
             zero_scores.append(0.0)
             continue
 
         valid_pairs.append((pred, ref))
 
     if not valid_pairs and not zero_scores:
-        # All summary answers were "unanswerable" — QA call failed entirely.
-        # Return None so the sample is skipped rather than penalised with 0.
+        
         return None
 
     bert_scores = []
@@ -454,7 +441,7 @@ def compare_answers_bertscore(pred_answers: list, ref_answers: list):
 
     all_scores = bert_scores + zero_scores
     if not all_scores:
-        # No scoreable pairs survived — treat as skipped, not a real zero.
+       
         return None
 
     return round(sum(all_scores) / len(all_scores), 4)
@@ -462,7 +449,6 @@ def compare_answers_bertscore(pred_answers: list, ref_answers: list):
 
 # ============================================================
 
-# Number of times to retry the full 3-call pipeline if it returns None.
 SAMPLE_MAX_RETRIES = 3
 
 
@@ -472,20 +458,20 @@ def _run_pipeline(article: str, summary: str):
     Returns a result dict on success, or None if the pipeline failed
     (empty questions or all summary QA answers were unanswerable).
     """
-    # CALL 1: generate all questions from the whole summary
+  
     questions, question_sources = generate_questions(summary)
     if not questions:
         tprint("  [PIPELINE] No questions generated — will retry if attempts remain.")
         return None
 
-    # CALL 2: answer all questions using the whole summary
+   
     ref_answers = answer_questions_batch(
         context=summary,
         questions=questions,
         is_article=False,
     )
 
-    # CALL 3: answer all questions using the source article
+    
     pred_answers = answer_questions_batch(
         context=article,
         questions=questions,
@@ -536,11 +522,11 @@ def evaluate_sample(idx: int, article: str, summary: str) -> dict:
     if not summary or summary.startswith("ERROR"):
         return empty_result
 
-    # Retry the full pipeline up to SAMPLE_MAX_RETRIES times.
+  
     for attempt in range(1, SAMPLE_MAX_RETRIES + 1):
         if attempt > 1:
             tprint(f"  [RETRY] idx={idx} attempt {attempt}/{SAMPLE_MAX_RETRIES}")
-            time.sleep(1.0)  # brief pause before retry
+            time.sleep(1.0)  
 
         result = _run_pipeline(article, summary)
 
@@ -654,9 +640,9 @@ for CURRENT_MODEL in active_models:
                 )
 
     except KeyboardInterrupt:
-        print("\n\n⚠️  Interrupted! Saving partial results...")
+        print("\n\n  Interrupted! Saving partial results...")
 
-    # Fill any samples that did not complete (interrupted / crashed).
+    
     for i in range(n):
         if results[i] is None:
             results[i] = {

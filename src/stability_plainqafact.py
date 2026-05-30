@@ -47,7 +47,7 @@ STABILITY_MODELS  = ["DeepSeek-V3.1", "DeepSeek-V3.1-Thinking"]
 
 JUDGE_MODEL       = "gpt-4o-mini"
 N_RUNS            = 5
-TEMPERATURE       = 1.0          # ← key change vs main eval (was 0.0)
+TEMPERATURE       = 1.0          
 N_THREADS         = 8
 MAX_RETRIES       = 5
 RETRY_BASE_DELAY  = 2.0
@@ -113,7 +113,7 @@ def call_gpt(system: str, user: str, max_tokens: int = 500) -> str:
                     {"role": "user",   "content": user},
                 ],
                 max_tokens=max_tokens,
-                temperature=TEMPERATURE,   # ← 1.0 for stability test
+                temperature=TEMPERATURE,   
             )
             return (response.choices[0].message.content or "").strip()
         except Exception as e:

@@ -3,14 +3,7 @@ Stability Analysis — FactScore (same config, 5 runs)
 =====================================================
 Repeats the FactScore evaluation N_RUNS times for selected models.
 
-NOTE on temperature:
-  FactScore uses gpt-5-nano with reasoning_effort="minimal".
-  The temperature parameter is NOT explicitly controllable in this
-  configuration — it is managed internally by the reasoning system.
-  Therefore this stability test runs 5 times with the SAME configuration
-  as the main eval, and reports natural run-to-run variation.
-  This is documented in the report as:
-    "temperature was not configurable for this metric"
+
 
 Models evaluated:
   - DeepSeek-V3.1

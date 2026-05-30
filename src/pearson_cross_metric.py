@@ -61,7 +61,7 @@ def build_corr_matrix(df):
     """Build r-matrix and p-matrix for all metric pairs."""
     n = len(METRICS)
     mat_r = np.ones((n, n))
-    mat_p = np.zeros((n, n))          # diagonal stays 0 (shown as "1.00" only)
+    mat_p = np.zeros((n, n))         
     for i in range(n):
         for j in range(n):
             if i != j:
@@ -92,12 +92,12 @@ def draw_heatmap(ax, mat_r, mat_p, title, fontsize_val=11):
             txt_color = "white" if brightness > 0.75 or brightness < 0.25 else "black"
 
             if i == j:
-                # Diagonal: just show 1.00
+               
                 label = f"{r_val:.2f}"
                 ax.text(j, i, label, ha="center", va="center",
                         fontsize=fontsize_val, fontweight="bold", color=txt_color)
             else:
-                # Off-diagonal: r on top line, p-value on second line
+               
                 r_line = f"{r_val:.2f}"
                 p_line = fmt_p(mat_p[i, j])
                 ax.text(j, i - 0.12, r_line, ha="center", va="center",

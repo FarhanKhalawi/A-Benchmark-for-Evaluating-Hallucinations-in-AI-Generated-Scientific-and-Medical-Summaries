@@ -1,18 +1,6 @@
 """
 Baseline Setup — Human-Written Abstracts as Reference
 ======================================================
-This script takes the original human-written abstracts from the dataset
-and formats them as if they were model outputs. This creates a BASELINE
-for comparison against AI-generated abstracts.
-
-After running this, you can use the SAME factscore.py and humanness scripts
-to evaluate the human abstracts and see:
-  - What FactScore do humans get? (should be ~1.0)
-  - What humanness score do humans get? (should be 70-100)
-  - How do AI models compare to this baseline?
-
-Usage:
-    python setup_baseline.py
 
 Creates:
     outputs(Abstract-Baseline)_pubmed_abstract/results1000.csv
@@ -76,8 +64,7 @@ print(f"   ✓ Directory ready")
 # Create the results CSV in the same format as model outputs
 print(f"\n4. Creating {OUTPUT_CSV} ...")
 
-# Format: same as your model output files
-# The key column is "generated_summary" - we'll put the human abstract there
+
 output_df = pd.DataFrame({
     'generated_summary': df_subset['abstract'].astype(str).tolist(),
 })
