@@ -1,5 +1,5 @@
 # ── API clients ───────────────────────────────────────────────
-openai          # OpenAI models (GPT-4.1-nano, GPT-4o-mini, GPT-5-nano, GPT-5.4-nano)
+openai          # OpenAI models — GPT models
 together        # Together AI — Qwen and DeepSeek models
 
 # ── Data handling ─────────────────────────────────────────────
